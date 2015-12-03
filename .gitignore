@@ -1,0 +1,6 @@
+devel/
+build/
+.gradle/
+*.*~
+src/CMakeLists.txt
+.catkin_workspace
