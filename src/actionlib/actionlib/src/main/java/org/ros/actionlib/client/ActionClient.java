@@ -1,12 +1,12 @@
 /*
  * Copyright (C) 2011 Alexander Perzylo, Technische Universität München
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -45,11 +45,11 @@ import java.util.concurrent.TimeUnit;
  * Every goal that is sent to the server is represented by a
  * {@link ClientGoalHandle} that allows to monitor the goal's progress. An
  * ActionClient may send more than one goal message at a time.
- * 
+ *
  * @see SimpleActionClient
- * 
+ *
  * @author Alexander C. Perzylo, perzylo@cs.tum.edu
- * 
+ *
  * @param <T_ACTION_FEEDBACK>
  *          action feedback message
  * @param <T_ACTION_GOAL>
@@ -143,7 +143,7 @@ public class ActionClient<T_ACTION_FEEDBACK extends Message, T_ACTION_GOAL exten
    * Constructor used to create an ActionClient that will be a child node of the
    * node represented by the given node handle. It communicates in a given
    * nodeName space on a given action specification.
-   * 
+   *
    * @param nameSpace
    *          The nodeName space to communicate within (specified by the action
    *          server)
@@ -159,15 +159,18 @@ public class ActionClient<T_ACTION_FEEDBACK extends Message, T_ACTION_GOAL exten
     this.nodeName = name;
     this.spec = spec;
     this.readyLatch = new CountDownLatch(2);
+    System.out.println("DEBUG: ActionClient constructor... namespace: " + this.nodeName);
     this.goalPublisherListener = new DefaultPublisherListener<T_ACTION_GOAL>() {
       @Override
       public void onNewSubscriber(Publisher<T_ACTION_GOAL> publisher, SubscriberIdentifier si) {
+        System.out.println("DEBUG: Got a new suscriber for goal!");
         readyLatch.countDown();
       }
     };
     this.cancelPublisherListener = new DefaultPublisherListener<GoalID>() {
       @Override
       public void onNewSubscriber(Publisher<GoalID> publisher, SubscriberIdentifier si) {
+        System.out.println("DEBUG: Got a new suscriber for goal_id!?");
         readyLatch.countDown();
       }
     };
@@ -175,10 +178,10 @@ public class ActionClient<T_ACTION_FEEDBACK extends Message, T_ACTION_GOAL exten
 
   /**
    * Add all action client publishers and subscribers to the given node.
-   * 
+   *
    * <p>
    * Lifetime of the node is taken over by the client.
-   * 
+   *
    * @param node
    */
   public void addClientPubSub(ConnectedNode node) {
@@ -191,7 +194,7 @@ public class ActionClient<T_ACTION_FEEDBACK extends Message, T_ACTION_GOAL exten
       }
     };
     subFeedback =
-        node.newSubscriber(ActionConstants.TOPIC_NAME_FEEDBACK, spec.getActionFeedbackMessage());
+        node.newSubscriber(this.nodeName + ActionConstants.TOPIC_NAME_FEEDBACK, spec.getActionFeedbackMessage());
     subFeedback.addMessageListener(feedbackCallback);
 
     MessageListener<T_ACTION_RESULT> resultCallback = new MessageListener<T_ACTION_RESULT>() {
@@ -201,7 +204,7 @@ public class ActionClient<T_ACTION_FEEDBACK extends Message, T_ACTION_GOAL exten
       }
     };
     subResult =
-        node.newSubscriber(ActionConstants.TOPIC_NAME_RESULT, spec.getActionResultMessage());
+        node.newSubscriber(this.nodeName + ActionConstants.TOPIC_NAME_RESULT, spec.getActionResultMessage());
     subResult.addMessageListener(resultCallback);
 
     MessageListener<GoalStatusArray> statusCallback = new MessageListener<GoalStatusArray>() {
@@ -211,13 +214,13 @@ public class ActionClient<T_ACTION_FEEDBACK extends Message, T_ACTION_GOAL exten
       }
     };
     subStatus =
-        node.newSubscriber(ActionConstants.TOPIC_NAME_STATUS, ActionConstants.MESSAGE_TYPE_STATUS);
+        node.newSubscriber(this.nodeName + ActionConstants.TOPIC_NAME_STATUS, ActionConstants.MESSAGE_TYPE_STATUS);
     subStatus.addMessageListener(statusCallback);
 
-    pubGoal = node.newPublisher(ActionConstants.TOPIC_NAME_GOAL, spec.getActionGoalMessage());
+    pubGoal = node.newPublisher(this.nodeName + ActionConstants.TOPIC_NAME_GOAL, spec.getActionGoalMessage());
     pubGoal.addListener(goalPublisherListener);
     pubCancelGoal =
-        node.newPublisher(ActionConstants.TOPIC_NAME_CANCEL, ActionConstants.MESSAGE_TYPE_CANCEL);
+        node.newPublisher(this.nodeName + ActionConstants.TOPIC_NAME_CANCEL, ActionConstants.MESSAGE_TYPE_CANCEL);
     pubCancelGoal.addListener(cancelPublisherListener);
 
     // Uses the node of the action client so must be done here.
@@ -229,7 +232,7 @@ public class ActionClient<T_ACTION_FEEDBACK extends Message, T_ACTION_GOAL exten
   /**
    * Sends a goal message to the action server without demanding callback
    * methods which would enable the user to track the progress of the goal.
-   * 
+   *
    * @param goal
    *          The goal message
    * @return The ClientGoalHandle that is associated with the goal message.
@@ -243,7 +246,7 @@ public class ActionClient<T_ACTION_FEEDBACK extends Message, T_ACTION_GOAL exten
   /**
    * Sends a goal message to the action server demanding callback methods which
    * enable the user to track the progress of the goal.
-   * 
+   *
    * @param goal
    *          The goal message
    * @param callbacks
@@ -275,7 +278,7 @@ public class ActionClient<T_ACTION_FEEDBACK extends Message, T_ACTION_GOAL exten
   /**
    * Cancels the execution of all goals that were sent out with a timestamp
    * equal to or before the specified time.
-   * 
+   *
    * @param time
    *          A point in time.
    */
@@ -304,10 +307,10 @@ public class ActionClient<T_ACTION_FEEDBACK extends Message, T_ACTION_GOAL exten
 
   /**
    * Checks if the ActionClient is active or was shutdown before.
-   * 
+   *
    * @return <tt>true</tt> - If the ActionClient is active<br>
    *         <tt>false</tt> - Otherwise
-   * 
+   *
    * @see #shutdown()
    */
   public boolean isActive() {
@@ -337,7 +340,7 @@ public class ActionClient<T_ACTION_FEEDBACK extends Message, T_ACTION_GOAL exten
 
   /**
    * Waits for the action server to start up.
-   * 
+   *
    * @return <tt>true</tt> - if the SimpleActionClient could establish a
    *         connection to the action server<br>
    *         <tt>false</tt> - If the action client's node handle is not ok
@@ -352,7 +355,7 @@ public class ActionClient<T_ACTION_FEEDBACK extends Message, T_ACTION_GOAL exten
    * Waits up to the specified duration for the action server to start up. If no
    * connection could be established within the given time, the method returns
    * indicating the error.
-   * 
+   *
    * @param timeout
    *          The maximum duration to wait for the action server to start up. A
    *          zero length duration results in unlimited waiting.
@@ -372,7 +375,7 @@ public class ActionClient<T_ACTION_FEEDBACK extends Message, T_ACTION_GOAL exten
 
   /**
    * Gets the ActionClient's node.
-   * 
+   *
    * @return The node
    */
   protected ConnectedNode getNode() {
@@ -381,7 +384,7 @@ public class ActionClient<T_ACTION_FEEDBACK extends Message, T_ACTION_GOAL exten
 
   /**
    * Publishes the given action goal message on the goal topic.
-   * 
+   *
    * @param actionGoal
    *          The action goal message
    */
@@ -394,7 +397,7 @@ public class ActionClient<T_ACTION_FEEDBACK extends Message, T_ACTION_GOAL exten
   /**
    * Publishes the given GoalID message on the cancel topic. This should cause
    * the action server to stop working on the goal represented by this GoalID.
-   * 
+   *
    * @param cancelMessage
    *          The GoalID message using the id of the goal that shall be canceled
    */
@@ -408,10 +411,10 @@ public class ActionClient<T_ACTION_FEEDBACK extends Message, T_ACTION_GOAL exten
    * Callback method used when the subscriber of the action server's status
    * topic receives a new list of GoalStatus messages. This ActionClient's
    * GoalManager gets informed about the newly arrived messages.
-   * 
+   *
    * @param goalStatuses
    *          A list of GoalStatus messages
-   * 
+   *
    * @see GoalManager#updateStatuses(GoalStatusArray)
    */
   protected void doStatusCallback(GoalStatusArray goalStatuses) {
@@ -437,10 +440,10 @@ public class ActionClient<T_ACTION_FEEDBACK extends Message, T_ACTION_GOAL exten
    * Callback method used when the subscriber of the action server's feedback
    * topic receives a new action feedback message. This ActionClient's
    * GoalManager gets informed about the newly arrived message.
-   * 
+   *
    * @param actionFeedback
    *          An action feedback message
-   * 
+   *
    * @see GoalManager#updateFeedbacks(Message)
    */
   protected void doFeedbackCallback(T_ACTION_FEEDBACK actionFeedback) {
@@ -455,10 +458,10 @@ public class ActionClient<T_ACTION_FEEDBACK extends Message, T_ACTION_GOAL exten
    * Callback method used when the subscriber of the action server's result
    * topic receives a new action result message. This ActionClient's GoalManager
    * gets informed about the newly arrived message.
-   * 
+   *
    * @param actionResult
    *          An action result message
-   * 
+   *
    * @see GoalManager#updateResults(Message)
    */
   protected void doResultCallback(T_ACTION_RESULT actionResult) {
