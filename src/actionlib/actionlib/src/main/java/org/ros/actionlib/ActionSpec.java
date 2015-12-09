@@ -1,12 +1,12 @@
 /*
  * Copyright (C) 2011 Alexander Perzylo, Technische Universität München
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -24,7 +24,8 @@ import org.ros.actionlib.server.DefaultSimpleActionServer;
 import org.ros.actionlib.server.SimpleActionServer;
 import org.ros.actionlib.server.SimpleActionServerCallbacks;
 import org.ros.exception.RosException;
-import org.ros.internal.message.Message;
+//import org.ros.internal.message.Message;
+import org.ros.internal.message.*;
 import org.ros.message.Time;
 import org.ros.node.topic.*;
 import actionlib_msgs.GoalID;
@@ -37,7 +38,7 @@ import org.ros.message.MessageFactory;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 /**
- * 
+ *
  * An ActionSpec defines the action on which an action client and action server
  * communicate. It provides methods to create all necessary action messages and
  * extract specific pieces of data from given messages. ActionSpecs are needed
@@ -45,25 +46,25 @@ import java.lang.reflect.Method;
  * convenience the ActionSpec class contains methods to build action clients and
  * servers. <br>
  * Example: <blockquote>
- * 
+ *
  * <pre>
  * {
  *   &#064;code
  *   ActionSpec&lt;FibonacciAction, FibonacciActionFeedback, FibonacciActionGoal, FibonacciActionResult, FibonacciFeedback, FibonacciGoal, FibonacciResult&gt; spec;
- * 
+ *
  *   spec =
  *       new ActionSpec&lt;FibonacciAction, FibonacciActionFeedback, FibonacciActionGoal, FibonacciActionResult, FibonacciFeedback, FibonacciGoal, FibonacciResult&gt;(
  *           FibonacciAction.class);
- * 
+ *
  *   SimpleActionClient&lt;FibonacciActionFeedback, FibonacciActionGoal, FibonacciActionResult, FibonacciFeedback, FibonacciGoal, FibonacciResult&gt; sac =
  *       spec.createSimpleActionClient(&quot;fibonacci&quot;);
  * }
  * </pre>
- * 
+ *
  * </blockquote> In order to cut the declaration part short, a specialized
  * ActionSpec can be derived and used (e.g. FibonacciActionSpec, which is part
  * of ROS package 'test_actionlib_java'): <blockquote>
- * 
+ *
  * <pre>
  * {
  *   &#064;code
@@ -71,12 +72,12 @@ import java.lang.reflect.Method;
  *   FibonacciSimpleActionClient sac = spec.buildSimpleActionClient(&quot;fibonacci&quot;);
  * }
  * </pre>
- * 
+ *
  * </blockquote>
- * 
- * 
+ *
+ *
  * @author Alexander C. Perzylo, perzylo@cs.tum.edu
- * 
+ *
  * @param <T_ACTION>
  *          action message
  * @param <T_ACTION_FEEDBACK>
@@ -93,12 +94,12 @@ import java.lang.reflect.Method;
  *          result message
  */
 public class ActionSpec<
-    T_ACTION extends Message, 
-    T_ACTION_FEEDBACK extends Message, 
-    T_ACTION_GOAL extends Message, 
-    T_ACTION_RESULT extends Message, 
-    T_FEEDBACK extends Message, 
-    T_GOAL extends Message, 
+    T_ACTION extends Message,
+    T_ACTION_FEEDBACK extends Message,
+    T_ACTION_GOAL extends Message,
+    T_ACTION_RESULT extends Message,
+    T_FEEDBACK extends Message,
+    T_GOAL extends Message,
     T_RESULT extends Message> {
   /**
    * Name of action
@@ -139,7 +140,7 @@ public class ActionSpec<
    * Class of result message
    */
   public final Class<T_RESULT> clsResult;
-  
+
   /**
    * Class of Header message
    */
@@ -148,7 +149,7 @@ public class ActionSpec<
 
   private String actionMessage;
   private String actionFeedbackMessage;
-  private String actionGoalMessage; 
+  private String actionGoalMessage;
   private String actionResultMessage;
   private String feedbackMessage;
   private String goalMessage;
@@ -162,26 +163,26 @@ public class ActionSpec<
    * missing, calling most of the methods of this class will result in a
    * NullPointerException. The isValid() method may be used to make sure the
    * ActionSpec was correctly instantiated.
-   * 
+   *
    * @param clsAction
    *          The class object of an action message
    */
   @SuppressWarnings("unchecked")
-  public ActionSpec(Class<T_ACTION> clsAction, 
-      String actionMessage, 
-      String actionFeedbackMessage, 
-      String actionGoalMessage, 
-      String actionResultMessage, 
-      String feedbackMessage, 
+  public ActionSpec(Class<T_ACTION> clsAction,
+      String actionMessage,
+      String actionFeedbackMessage,
+      String actionGoalMessage,
+      String actionResultMessage,
+      String feedbackMessage,
       String goalMessage,
       String resultMessage) throws RosException {
-      
+
     nc = NodeConfiguration.newPrivate();
     mf = nc.getTopicMessageFactory();
 
     this.actionMessage = actionMessage;
     this.actionFeedbackMessage = actionFeedbackMessage;
-    this.actionGoalMessage = actionGoalMessage; 
+    this.actionGoalMessage = actionGoalMessage;
     this.actionResultMessage = actionResultMessage;
     this.feedbackMessage = feedbackMessage;
     this.goalMessage = goalMessage;
@@ -303,7 +304,7 @@ public class ActionSpec<
   /**
    * Checks, if entailed information is complete in order to use it with an
    * action client/server.
-   * 
+   *
    * @return <tt>true</tt> - if this ActionSpec was instantiated correctly<br>
    *         <tt>false</tt> - otherwise (if that happens, please check if the
    *         given class parameters are correct and if their order complies with
@@ -318,7 +319,7 @@ public class ActionSpec<
 
   /**
    * Creates an ActionClient using this ActionSpec and a given nodeName space.
-   * 
+   *
    * @param nameSpace
    *          The nodeName space to communicate within (specified by the action
    *          server)
@@ -345,7 +346,7 @@ public class ActionSpec<
    * The SimpleActionClient gets parameterized to create a new thread to service
    * the callbacks. This spares the users the effort to call spin() or
    * spinOnce() themselves.
-   * 
+   *
    * @param nameSpace
    *          The nodeName space to communicate within (specified by the action
    *          server)
@@ -371,7 +372,7 @@ public class ActionSpec<
   /**
    * Creates an DefaultActionServer using this ActionSpec, a given nodeName space
    * and a callback object intended to be used by the server.
-   * 
+   *
    * @param nameSpace
    *          The nodeName space to communicate within
    * @param callbacks
@@ -398,7 +399,7 @@ public class ActionSpec<
    * space and a callback object intended to be used by the server. The
    * useBlockingGoalCallback parameter specifies which callback method will be
    * used on the reception of goal messages.
-   * 
+   *
    * @param nameSpace
    *          The nodeName space to communicate within
    * @param callbacks
@@ -411,7 +412,7 @@ public class ActionSpec<
    *          A flag, indicating whether the server shall be immediately started
    *          or not
    * @return A DefaultSimpleActionServer object
-   * 
+   *
    * @see SimpleActionServerCallbacks#blockingGoalCallback(Message)
    * @see SimpleActionServerCallbacks#goalCallback()
    */
@@ -429,7 +430,7 @@ public class ActionSpec<
 
   /**
    * Creates an action message.
-   * 
+   *
    * @return A new action message object
    */
   public T_ACTION createActionMessage() {
@@ -445,7 +446,7 @@ public class ActionSpec<
 
   /**
    * Creates an action feedback message.
-   * 
+   *
    * @return A new action feedback message object
    */
   public T_ACTION_FEEDBACK createActionFeedbackMessage() {
@@ -462,7 +463,7 @@ public class ActionSpec<
   /**
    * Creates an action feedback message with the given feedback message,
    * timestamp and GoalStatus.
-   * 
+   *
    * @param feedback
    *          A feedback message
    * @param t
@@ -496,7 +497,7 @@ public class ActionSpec<
 
   /**
    * Creates an action goal message.
-   * 
+   *
    * @return A new action goal message object
    */
   public T_ACTION_GOAL createActionGoalMessage() {
@@ -513,7 +514,7 @@ public class ActionSpec<
   /**
    * Creates an action goal message with the given goal message, timestamp and
    * GoalID.
-   * 
+   *
    * @param goal
    *          A goal message
    * @param t
@@ -548,7 +549,7 @@ public class ActionSpec<
 
   /**
    * Creates an action result message.
-   * 
+   *
    * @return A new action result message object
    */
   public T_ACTION_RESULT createActionResultMessage() {
@@ -565,7 +566,7 @@ public class ActionSpec<
   /**
    * Creates an action result message with the given result message, timestamp
    * and GoalStatus.
-   * 
+   *
    * @param result
    *          A result message
    * @param t
@@ -599,7 +600,7 @@ public class ActionSpec<
 
   /**
    * Creates a feedback message.
-   * 
+   *
    * @return A new feedback message object
    */
   public T_FEEDBACK createFeedbackMessage() {
@@ -615,7 +616,7 @@ public class ActionSpec<
 
   /**
    * Creates a goal message.
-   * 
+   *
    * @return A new goal message object
    */
   public T_GOAL createGoalMessage() {
@@ -631,7 +632,7 @@ public class ActionSpec<
 
   /**
    * Creates a result message.
-   * 
+   *
    * @return A new result message object
    */
   public T_RESULT createResultMessage() {
@@ -647,7 +648,7 @@ public class ActionSpec<
 
   /**
    * Retrieves the feedback message from a given action feedback message.
-   * 
+   *
    * @param actionFeedback
    *          An action feedback message
    * @return The contained feedback message
@@ -665,7 +666,7 @@ public class ActionSpec<
 
   /**
    * Retrieves the goal message from a given action goal message.
-   * 
+   *
    * @param actionGoal
    *          An action goal message
    * @return The contained goal message
@@ -681,7 +682,7 @@ public class ActionSpec<
 
   /**
    * Retrieves the result message from a given action result message.
-   * 
+   *
    * @param actionResult
    *          An action result message
    * @return The contained result message
@@ -698,24 +699,44 @@ public class ActionSpec<
 
   /**
    * Retrieves the GoalID from a given action goal message.
-   * 
+   *
    * @param actionGoal
    *          An action goal message
    * @return The contained GoalID
    */
   public GoalID getGoalIDFromActionGoal(T_ACTION_GOAL actionGoal) throws RosException {
+    Method[] methods=null;
+    Class[] classes = actionGoal.getClass().getInterfaces();
+    int i;
+
+    System.out.println("*** Printing package: " + actionGoal.getClass().getPackage());
+    System.out.println("*** Printing interfaces:");
+    for(i=0; i<classes.length; i++)
+      System.out.println(classes[i]);
+    try {
+      methods = actionGoal.getClass().getMethods();
+      System.out.println("*** Printing methods:");
+      for(i=0; i<methods.length; i++) {
+        System.out.println(methods[i].toGenericString() + " isAccesible: " + methods[i].isAccessible());}
+      System.out.println("*** Protection domain: " + actionGoal.getClass().getProtectionDomain());
+      System.out.println("*** Class loader for ActionGoal: " + actionGoal.getClass().getClassLoader());
+      System.out.println("*** Class loader for this class: " + this.getClass().getClassLoader());
+    }
+    catch (Exception e) {}
+
     try {
       Method m = clsActionGoal.getMethod("getGoalId");
+      System.out.println("method return type: " + m.getReturnType());
       return (GoalID) m.invoke(actionGoal);
     } catch (Exception e) {
       throw new RosException(
-          "[ActionSpec] Couldn't find field 'goal_id' of type 'GoalID' in action goal message.", e);
+          "[ActionSpec] Couldn't find field 'goal_id' of type 'GoalID' in action goal message. error: " + e, e);
     }
   }
 
   /**
    * Retrieves the GoalStatus from a given action feedback message.
-   * 
+   *
    * @param actionFeedback
    *          An action feedback message
    * @return The contained GoalStatus
@@ -734,7 +755,7 @@ public class ActionSpec<
 
   /**
    * Retrieves the GoalStatus from a given action result message.
-   * 
+   *
    * @param actionResult
    *          An action result message
    * @return The contained GoalStatus
